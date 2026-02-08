@@ -86,7 +86,7 @@ def plotDashboard(result):
         ax.set_xlabel("Year", color='white', fontsize=12)
         ax.set_ylabel("GDP (USD)", color='white', fontsize=12)
         
-        # --- FIX: Rotate x-axis labels 90 degrees ---
+        # Vertical X-Axis Labels
         ax.tick_params(axis='x', rotation=90, colors='white')
         ax.tick_params(axis='y', colors='white')
         
@@ -95,6 +95,26 @@ def plotDashboard(result):
     else:
         print(f"Unknown graph type: {graphType}")
         return
+
+    # --- STATS BOX LOGIC ---
+    # Construct the string to display
+    stat_text = ""
+    if "resultValue" in result:
+        # This comes from Region Analysis (Single Stat)
+        val = result["resultValue"]
+        stat_text = f"Calculated Result:\n${val:,.2f}"
+    elif "stats" in result:
+        # This comes from Country Trend (Dictionary of stats)
+        avg = result["stats"].get("average", 0)
+        tot = result["stats"].get("total", 0)
+        stat_text = f"Period Average:\n${avg:,.2f}\n\nTotal Volume:\n${tot:,.2f}"
+
+    # Draw the Text Box in Top Right Corner (if we have text)
+    if stat_text:
+        ax.text(0.98, 0.98, stat_text, transform=ax.transAxes,
+                fontsize=11, color='#00ffcc', fontweight='bold',
+                ha='right', va='top', 
+                bbox=dict(boxstyle="round,pad=0.5", fc="#333333", ec="white", alpha=0.9))
 
     # --- Layout Polish ---
     ax.set_title(title, color='white', fontsize=16, fontweight='bold', pad=20)
@@ -105,6 +125,6 @@ def plotDashboard(result):
     ax.spines['bottom'].set_color('white')
     ax.spines['left'].set_color('white')
 
-    # Adjust bottom margin (Increased slightly to accommodate vertical text)
+    # Adjust bottom margin
     plt.subplots_adjust(bottom=0.25)
     plt.show()

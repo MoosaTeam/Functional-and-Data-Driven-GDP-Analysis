@@ -12,12 +12,17 @@ DATA = loader.loadData("gdp_with_continent_filled.csv")
 MIN_YEAR = 1960
 MAX_YEAR = 2024
 
+# --- Colors (Material Dark Palette) ---
+BG_COLOR = "#1e1e1e"        # Dark Grey (Background)
+FG_COLOR = "#ffffff"        # White (Text)
+ACCENT_COLOR = "#00ffcc"    # Cyan (Highlights)
+BUTTON_BG = "#333333"       # Slightly lighter grey for buttons
+BUTTON_ACTIVE = "#444444"   # Hover state
+ERROR_COLOR = "#cf6679"     # Muted Red for Quit/Errors
+
 # --- Helper: Validation Logic ---
 def validateConfig(config):
-    """
-    Validates the structure of the uploaded JSON configuration.
-    Returns True if valid, False otherwise.
-    """
+    """Validates the structure of the uploaded JSON configuration."""
     if "analyses" not in config:
         print("Error: Config missing 'analyses' list.")
         return False
@@ -27,7 +32,6 @@ def validateConfig(config):
             print(f"Error: Analysis item #{i+1} missing 'type'.")
             return False
         
-        # Check specific fields based on type
         if item["type"] == "region":
             if not all(k in item for k in ("region", "year", "operation")):
                 print(f"Error: Region analysis #{i+1} missing required fields.")
@@ -44,19 +48,22 @@ class GDPDashboardGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("GDP Analysis Dashboard")
-        self.root.geometry("500x550")
+        self.root.geometry("500x650") 
         self.root.resizable(True, True)
+        
+        # Apply the Dark Theme
+        self.setup_dark_theme()
 
         # --- Section 1: JSON Import ---
         import_frame = ttk.LabelFrame(root, text="Batch Processing (JSON)")
-        import_frame.pack(fill="x", padx=10, pady=10)
+        import_frame.pack(fill="x", padx=15, pady=15)
         
         ttk.Label(import_frame, text="Load a config.json file to run multiple analyses:").pack(pady=5)
         ttk.Button(import_frame, text="Import Config File", command=self.import_json_config).pack(pady=10)
 
         # --- Section 2: Manual Interactive Mode ---
         manual_frame = ttk.LabelFrame(root, text="Manual Analysis")
-        manual_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        manual_frame.pack(fill="both", expand=True, padx=15, pady=10)
 
         ttk.Label(manual_frame, text="Select Analysis Type:").pack(pady=5)
         self.analysis_type = ttk.Combobox(manual_frame, values=["Region", "Country Trend"], state="readonly")
@@ -96,13 +103,74 @@ class GDPDashboardGUI:
         self.graph_combo.pack()
         self.graph_combo.current(0)
 
-        # Button
-        ttk.Button(manual_frame, text="Generate Graph", command=self.generate_graph).pack(pady=15)
+        # Action Buttons
+        button_frame = ttk.Frame(root)
+        button_frame.pack(pady=20)
+
+        # Generate Button (Cyan Accent)
+        gen_btn = ttk.Button(button_frame, text="Generate Graph", command=self.generate_graph)
+        gen_btn.pack(side="left", padx=10)
+        
+        # Quit Button (Red Accent)
+        quit_btn = ttk.Button(button_frame, text="Quit Application", command=root.quit, style="Quit.TButton")
+        quit_btn.pack(side="left", padx=10)
 
         self.toggle_fields()  # initialize
 
+    def setup_dark_theme(self):
+        """Configures the Tkinter styling engine for a Dark Material look."""
+        self.root.configure(bg=BG_COLOR)
+        
+        style = ttk.Style()
+        style.theme_use('clam') # 'Clam' allows for easiest color customization
+
+        # General Styling
+        style.configure(".", 
+            background=BG_COLOR, 
+            foreground=FG_COLOR, 
+            fieldbackground=BUTTON_BG,
+            font=("Segoe UI", 10)
+        )
+
+        # Frames & LabelFrames
+        style.configure("TLabelframe", background=BG_COLOR, bordercolor=BUTTON_BG, relief="flat")
+        style.configure("TLabelframe.Label", background=BG_COLOR, foreground=ACCENT_COLOR, font=("Segoe UI", 11, "bold"))
+        style.configure("TFrame", background=BG_COLOR)
+
+        # Labels
+        style.configure("TLabel", background=BG_COLOR, foreground=FG_COLOR)
+
+        # Buttons (Standard)
+        style.configure("TButton", 
+            background=BUTTON_BG, 
+            foreground=FG_COLOR, 
+            borderwidth=0, 
+            focuscolor=ACCENT_COLOR
+        )
+        style.map("TButton", 
+            background=[("active", BUTTON_ACTIVE)], 
+            foreground=[("active", ACCENT_COLOR)]
+        )
+
+        # Buttons (Quit - Red Style)
+        style.configure("Quit.TButton", 
+            background=BUTTON_BG, 
+            foreground=ERROR_COLOR
+        )
+        style.map("Quit.TButton", 
+            background=[("active", ERROR_COLOR)], 
+            foreground=[("active", "white")]
+        )
+
+        # Entries (Text Inputs)
+        style.configure("TEntry", fieldbackground=BUTTON_BG, foreground="white", insertcolor="white")
+        
+        # Combobox (Dropdowns)
+        style.configure("TCombobox", fieldbackground=BUTTON_BG, background=BUTTON_BG, foreground="white", arrowcolor="white")
+        style.map("TCombobox", fieldbackground=[("readonly", BUTTON_BG)], selectbackground=[("readonly", BUTTON_BG)])
+
+
     def toggle_fields(self, event=None):
-        """Show/hide region or country fields based on analysis type."""
         if self.analysis_type.get() == "Region":
             self.region_label.pack()
             self.region_combo.pack()
@@ -115,24 +183,17 @@ class GDPDashboardGUI:
             self.country_entry.pack()
 
     def import_json_config(self):
-        """Handler for the Import JSON button."""
-        filename = filedialog.askopenfilename(
-            title="Select Configuration File",
-            filetypes=(("JSON Files", "*.json"), ("All Files", "*.*"))
-        )
-
-        if not filename:
-            return
+        filename = filedialog.askopenfilename(title="Select Configuration File", filetypes=(("JSON Files", "*.json"), ("All Files", "*.*")))
+        if not filename: return
 
         try:
-            with open(filename, "r") as f:
-                config = json.load(f)
+            with open(filename, "r") as f: config = json.load(f)
         except Exception as e:
             messagebox.showerror("File Error", f"Could not read JSON file:\n{e}")
             return
 
         if not validateConfig(config):
-            messagebox.showerror("Config Error", "Invalid configuration file structure. Check console for details.")
+            messagebox.showerror("Config Error", "Invalid configuration file. Check console.")
             return
 
         print(f"\n--- Batch Processing: {filename} ---")
@@ -143,26 +204,17 @@ class GDPDashboardGUI:
             if analysis["type"] == "region":
                 result = processor.processAnalysis(DATA, analysis)
                 result["graph"] = analysis.get("graph", "bar")
-                
                 print(f"Region: {analysis['region']}")
                 print(f"Operation: {analysis['operation'].capitalize()}")
                 print(f"Result: ${result['resultValue']:,.2f}")
-                
                 visualizer.plotDashboard(result)
 
             elif analysis["type"] == "country_trend":
-                result = processor.processCountryTrend(
-                    DATA, 
-                    analysis["country"], 
-                    analysis["start_year"], 
-                    analysis["end_year"]
-                )
-                
+                result = processor.processCountryTrend(DATA, analysis["country"], analysis["start_year"], analysis["end_year"])
                 if result:
                     stats = result.get("stats", {})
                     print(f"Country: {analysis['country']}")
                     print(f"Average GDP ({analysis['start_year']}-{analysis['end_year']}): ${stats.get('average', 0):,.2f}")
-                    
                     visualizer.plotDashboard(result)
                 else:
                     print(f"Error: Country '{analysis['country']}' not found.")
@@ -170,7 +222,6 @@ class GDPDashboardGUI:
         messagebox.showinfo("Success", "Batch processing complete. Check console for stats.")
 
     def generate_graph(self):
-        """Generate graph from manual inputs."""
         try:
             graph_type = self.graph_combo.get()
             if graph_type not in ["bar", "pie", "line"]:
@@ -180,7 +231,6 @@ class GDPDashboardGUI:
             analysis_type = self.analysis_type.get()
             print(f"\n--- Manual Analysis: {analysis_type.upper()} ---")
 
-            # --- Region Analysis ---
             if analysis_type == "Region":
                 region = self.region_combo.get()
                 year_text = self.year_entry.get().strip()
@@ -202,14 +252,12 @@ class GDPDashboardGUI:
                 result = processor.processAnalysis(DATA, config)
                 result["graph"] = graph_type
                 
-                # FIX: Added Print Statements
                 print(f"Region: {region}")
                 print(f"Operation: {operation.capitalize()}")
                 print(f"Result: ${result['resultValue']:,.2f}")
                 
                 visualizer.plotDashboard(result)
 
-            # --- Country Trend Analysis ---
             else:
                 country = self.country_entry.get().strip()
                 start_text = self.year_entry.get().strip()
@@ -248,12 +296,9 @@ class GDPDashboardGUI:
                 result = processor.processCountryTrend(DATA, found_country, start_year, end_year)
                 if result:
                     result["graph"] = graph_type
-                    
-                    # FIX: Added Print Statements
                     stats = result.get("stats", {})
                     print(f"Country: {found_country}")
                     print(f"Average GDP ({start_year}-{end_year}): ${stats.get('average', 0):,.2f}")
-                    
                     visualizer.plotDashboard(result)
                 else:
                     messagebox.showerror("Error", f"No data available for '{country}' in the selected years.")
@@ -261,8 +306,8 @@ class GDPDashboardGUI:
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
-# --- Main ---
 if __name__ == "__main__":
     root = tk.Tk()
     app = GDPDashboardGUI(root)
     root.mainloop()
+
