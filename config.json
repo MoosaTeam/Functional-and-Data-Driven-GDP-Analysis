@@ -1,6 +1,26 @@
 {
-  "region": "Asia",
-  "year": 2020,
-  "operation": "average",
+  "analyses": [
+    {
+      "type": "region",
+      "region": "Asia",
+      "year": 2020,
+      "operation": "average",
+      "graph": "bar"
+    },
+    {
+      "type": "region",
+      "region": "Europe",
+      "year": 2020,
+      "operation": "sum",
+      "graph": "pie"
+    },
+    {
+      "type": "country_trend",
+      "country": "Pakistan",
+      "start_year": 2000,
+      "end_year": 2020,
+      "graph": "line"
+    }
+  ],
   "output": "dashboard"
 }
