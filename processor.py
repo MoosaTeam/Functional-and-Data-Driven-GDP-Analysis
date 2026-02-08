@@ -47,25 +47,23 @@ def processAnalysis(data, config):
             "region": targetRegion
     }
 
-if __name__ == "__main__":
-    import loader
 
-    testConfig = {
-            "region": "Asia",
-            "year": 1962,
-            "operation": "average"
+def processCountryTrend(data, countryName, startYear, endYear):
+    for c in data:
+        if c['country'].lower() == countryName.lower():
+            years = []
+            values = []
+            for year in range(startYear, endYear + 1):
+                if year in c['gdp']:
+                    years.append(year)
+                    values.append(c['gdp'][year])
+
+            return {
+                "title": f"GDP Trend of {countryName} ({startYear}-{endYear})",
+                "plotData": {
+                    "labels": years,
+                    "values": values
+                },
+                "graph": "line"
             }
-
-    print("Loading data for test...")
-    rawData = loader.loadData("gdp_with_continent_filled.csv")
-
-    if rawData:
-        print("Running processor...")
-        results = processAnalysis(rawData, testConfig)
-
-        print("\n--- Test Results ---")
-        print(f"Title: {results['title']}")
-        print(f"Value: {results['resultValue']:,.2f}")
-        print(f"Countries included: {len(results['plotData']['labels'])}")
-    else:
-        print("Could not load data. Check loader.py or CSV filename.")
+    return None

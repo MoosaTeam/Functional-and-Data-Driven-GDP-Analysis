@@ -1,28 +1,34 @@
 import matplotlib.pyplot as plt
 
-def plotDashboard(analysisResult):
-    """
-    Creates a GDP visualization dashboard using matplotlib.
-    """
+def plotDashboard(result):
+    graphType = result.get("graph", "bar")
+    labels = result["plotData"]["labels"]
+    values = result["plotData"]["values"]
+    title = result["title"]
 
-    title = analysisResult["title"]
-    values = analysisResult["plotData"]["values"]
-    labels = analysisResult["plotData"]["labels"]
-    year = analysisResult["year"]
-    region = analysisResult["region"]
-    resultValue = analysisResult["resultValue"]
-
-    if not values or not labels:
+    if not labels or not values:
         print("No data available for visualization.")
         return
 
-    plt.figure(figsize=(12, 6))
-    plt.bar(labels, values)
-    
-    plt.title(f"{title}\nResult: {resultValue:,.2f}")
-    plt.xlabel("Countries")
-    plt.ylabel("GDP")
-    plt.xticks(rotation=45, ha="right")
+    plt.figure(figsize=(10, 6))
 
+    if graphType == "bar":
+        plt.bar(labels, values)
+        plt.xticks(rotation=45, ha="right")
+        plt.ylabel("GDP")
+
+    elif graphType == "pie":
+        plt.pie(values, labels=labels, autopct='%1.1f%%')
+    
+    elif graphType == "line":
+        plt.plot(labels, values, marker='o')
+        plt.xlabel("Year")
+        plt.ylabel("GDP")
+
+    else:
+        print(f"Unknown graph type: {graphType}")
+        return
+
+    plt.title(title)
     plt.tight_layout()
     plt.show()

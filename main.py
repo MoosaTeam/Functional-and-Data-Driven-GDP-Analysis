@@ -9,20 +9,25 @@ def main():
 
     data = loader.loadData("gdp_with_continent_filled.csv")
 
-    regions = sorted(set(d['region'] for d in data))
-    print("Available regions:", regions)
-
-
     if not data:
         print("No data loaded.")
         return
 
-    analysisResult = processor.processAnalysis(data, config)
+    for analysis in config["analyses"]:
+        if analysis["type"] == "region":
+            result = processor.processAnalysis(data, analysis)
+            result["graph"] = analysis["graph"]
+            visualizer.plotDashboard(result)
 
-    if config.get("output") == "dashboard":
-        visualizer.plotDashboard(analysisResult)
-    else:
-        print(analysisResult)
+        elif analysis["type"] == "country_trend":
+            result = processor.processCountryTrend(
+                data,
+                analysis["country"],
+                analysis["start_year"],
+                analysis["end_year"]
+            )
+            if result:
+                visualizer.plotDashboard(result)
 
 if __name__ == "__main__":
     main()
