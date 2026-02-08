@@ -122,7 +122,7 @@ class GDPDashboardGUI:
         self.root.configure(bg=BG_COLOR)
         
         style = ttk.Style()
-        style.theme_use('clam') # 'Clam' allows for easiest color customization
+        style.theme_use('clam') 
 
         # General Styling
         style.configure(".", 

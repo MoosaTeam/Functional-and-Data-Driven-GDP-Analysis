@@ -25,7 +25,7 @@ def plotDashboard(result):
         print("No data available.")
         return
 
-    # Shorten labels (safe for strings only)
+
     labels = [shorten_label(l) for l in raw_labels]
 
     # Create Figure
@@ -53,7 +53,7 @@ def plotDashboard(result):
     # --- PIE CHART ---
     elif graphType == "pie":
         total = sum(values)
-        threshold = 0.01 * total # 1% Threshold
+        threshold = 0.01 * total
         
         main_labels = [l for l, v in zip(labels, values) if v >= threshold]
         main_values = [v for v in values if v >= threshold]
@@ -63,7 +63,7 @@ def plotDashboard(result):
             main_labels.append("Others")
             main_values.append(others)
 
-        # PLOT PIE
+
         wedges, texts, autotexts = ax.pie(
             main_values, 
             labels=main_labels, 
@@ -97,19 +97,19 @@ def plotDashboard(result):
         return
 
     # --- STATS BOX LOGIC ---
-    # Construct the string to display
+
     stat_text = ""
     if "resultValue" in result:
-        # This comes from Region Analysis (Single Stat)
+      
         val = result["resultValue"]
         stat_text = f"Calculated Result:\n${val:,.2f}"
     elif "stats" in result:
-        # This comes from Country Trend (Dictionary of stats)
+      
         avg = result["stats"].get("average", 0)
         tot = result["stats"].get("total", 0)
         stat_text = f"Period Average:\n${avg:,.2f}\n\nTotal Volume:\n${tot:,.2f}"
 
-    # Draw the Text Box in Top Right Corner (if we have text)
+
     if stat_text:
         ax.text(0.98, 0.98, stat_text, transform=ax.transAxes,
                 fontsize=11, color='#00ffcc', fontweight='bold',
@@ -125,6 +125,5 @@ def plotDashboard(result):
     ax.spines['bottom'].set_color('white')
     ax.spines['left'].set_color('white')
 
-    # Adjust bottom margin
     plt.subplots_adjust(bottom=0.25)
     plt.show()
