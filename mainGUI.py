@@ -12,7 +12,7 @@ DATA = loader.loadData("gdp_with_continent_filled.csv")
 MIN_YEAR = 1960
 MAX_YEAR = 2024
 
-# --- Helper: Validation Logic (Moved from mainconfig.py) ---
+# --- Helper: Validation Logic ---
 def validateConfig(config):
     """
     Validates the structure of the uploaded JSON configuration.
@@ -44,7 +44,7 @@ class GDPDashboardGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("GDP Analysis Dashboard")
-        self.root.geometry("500x550") # Increased height for the new button
+        self.root.geometry("500x550")
         self.root.resizable(True, True)
 
         # --- Section 1: JSON Import ---
@@ -115,10 +115,7 @@ class GDPDashboardGUI:
             self.country_entry.pack()
 
     def import_json_config(self):
-        """
-        Handler for the Import JSON button.
-        Replicates the logic from mainconfig.py.
-        """
+        """Handler for the Import JSON button."""
         filename = filedialog.askopenfilename(
             title="Select Configuration File",
             filetypes=(("JSON Files", "*.json"), ("All Files", "*.*"))
@@ -134,14 +131,12 @@ class GDPDashboardGUI:
             messagebox.showerror("File Error", f"Could not read JSON file:\n{e}")
             return
 
-        # 1. Validate
         if not validateConfig(config):
             messagebox.showerror("Config Error", "Invalid configuration file structure. Check console for details.")
             return
 
         print(f"\n--- Batch Processing: {filename} ---")
 
-        # 2. Process Loop (Same as mainconfig.py)
         for i, analysis in enumerate(config["analyses"]):
             print(f"\n--- Analysis #{i+1}: {analysis['type'].upper()} ---")
             
@@ -183,6 +178,7 @@ class GDPDashboardGUI:
                 return
 
             analysis_type = self.analysis_type.get()
+            print(f"\n--- Manual Analysis: {analysis_type.upper()} ---")
 
             # --- Region Analysis ---
             if analysis_type == "Region":
@@ -190,7 +186,6 @@ class GDPDashboardGUI:
                 year_text = self.year_entry.get().strip()
                 operation = self.operation_entry.get().strip().lower()
 
-                # Validate year
                 if not year_text.isdigit():
                     messagebox.showerror("Invalid Year", "Year must be a number.")
                     return
@@ -199,7 +194,6 @@ class GDPDashboardGUI:
                     messagebox.showerror("Invalid Year", f"Year must be between {MIN_YEAR} and {MAX_YEAR}.")
                     return
 
-                # Validate operation
                 if operation not in ["average", "sum", "max", "min"]:
                     messagebox.showerror("Invalid Operation", "Operation must be average, sum, max, or min.")
                     return
@@ -207,6 +201,12 @@ class GDPDashboardGUI:
                 config = {"region": region, "year": year, "operation": operation}
                 result = processor.processAnalysis(DATA, config)
                 result["graph"] = graph_type
+                
+                # FIX: Added Print Statements
+                print(f"Region: {region}")
+                print(f"Operation: {operation.capitalize()}")
+                print(f"Result: ${result['resultValue']:,.2f}")
+                
                 visualizer.plotDashboard(result)
 
             # --- Country Trend Analysis ---
@@ -215,7 +215,6 @@ class GDPDashboardGUI:
                 start_text = self.year_entry.get().strip()
                 end_text = self.end_year_entry.get().strip()
 
-                # Validate start year
                 if not start_text.isdigit():
                     messagebox.showerror("Invalid Start Year", "Start Year must be a number.")
                     return
@@ -224,7 +223,6 @@ class GDPDashboardGUI:
                     messagebox.showerror("Invalid Start Year", f"Start Year must be between {MIN_YEAR} and {MAX_YEAR}.")
                     return
 
-                # Validate end year
                 if end_text:
                     if not end_text.isdigit():
                         messagebox.showerror("Invalid End Year", "End Year must be a number.")
@@ -240,7 +238,6 @@ class GDPDashboardGUI:
                     messagebox.showerror("Invalid Year Range", "Start Year cannot be after End Year.")
                     return
 
-                # Validate country exists
                 countries = [d['country'] for d in DATA]
                 found_country = next((c for c in countries if c.lower() == country.lower()), None)
                 
@@ -248,10 +245,15 @@ class GDPDashboardGUI:
                     messagebox.showerror("Invalid Country", f"Country '{country}' not found.")
                     return
 
-                # Use the correct case for the country name
                 result = processor.processCountryTrend(DATA, found_country, start_year, end_year)
                 if result:
                     result["graph"] = graph_type
+                    
+                    # FIX: Added Print Statements
+                    stats = result.get("stats", {})
+                    print(f"Country: {found_country}")
+                    print(f"Average GDP ({start_year}-{end_year}): ${stats.get('average', 0):,.2f}")
+                    
                     visualizer.plotDashboard(result)
                 else:
                     messagebox.showerror("Error", f"No data available for '{country}' in the selected years.")
