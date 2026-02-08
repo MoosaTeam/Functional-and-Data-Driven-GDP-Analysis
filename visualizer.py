@@ -21,7 +21,7 @@ def plotDashboard(result):
     elif graphType == "pie":
         # --- Logic to Group Small Slices (< 5%) ---
         total_gdp = sum(values)
-        threshold = 0.05 * total_gdp  # 5% Threshold
+        threshold = 0.01 * total_gdp  # 5% Threshold
 
         # 1. Keep slices larger than 5% (Functional: List Comprehension)
         main_labels = [l for l, v in zip(labels, values) if v >= threshold]
