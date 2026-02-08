@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 plt.style.use('dark_background')
 COLORS = ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5']
 
-def shorten_label(label, max_len=15):
+def shorten_label(label, max_len=50):
     """
     Helper: Cuts off long names so they don't clutter the graph.
     Checks if label is a string first to avoid breaking Line Charts.
@@ -63,7 +63,7 @@ def plotDashboard(result):
             main_labels.append("Others")
             main_values.append(others)
 
-        # PLOT PIE: Added center=(0, -0.1) to move it down
+        # PLOT PIE
         wedges, texts, autotexts = ax.pie(
             main_values, 
             labels=main_labels, 
@@ -71,7 +71,7 @@ def plotDashboard(result):
             startangle=140,
             colors=COLORS,
             radius=1.2, 
-            center=(0, 0),  # <--- Moves the chart downwards
+            center=(0, 0), 
             textprops={'color':"white"}
         )
         plt.setp(autotexts, size=10, weight="bold", color="black")
@@ -85,6 +85,11 @@ def plotDashboard(result):
         
         ax.set_xlabel("Year", color='white', fontsize=12)
         ax.set_ylabel("GDP (USD)", color='white', fontsize=12)
+        
+        # --- FIX: Rotate x-axis labels 90 degrees ---
+        ax.tick_params(axis='x', rotation=90, colors='white')
+        ax.tick_params(axis='y', colors='white')
+        
         ax.grid(True, linestyle=':', alpha=0.4, color='gray')
 
     else:
@@ -100,6 +105,6 @@ def plotDashboard(result):
     ax.spines['bottom'].set_color('white')
     ax.spines['left'].set_color('white')
 
-    # Adjust bottom margin
-    plt.subplots_adjust(bottom=0.2)
+    # Adjust bottom margin (Increased slightly to accommodate vertical text)
+    plt.subplots_adjust(bottom=0.25)
     plt.show()
