@@ -6,9 +6,6 @@ def filterByRegion(data, regionName):
 def getYearValues(data, year):
     return [country['gdp'][year] for country in data if year in country['gdp']]
 
-def filterByCountry(data, countryName):
-    return list(filter(lambda country: country['country'] == countryName, data))
-
 def calculateStats(values, operationName):
     if not values:
         return 0.0
@@ -49,3 +46,26 @@ def processAnalysis(data, config):
             "year": targetYear,
             "region": targetRegion
     }
+
+if __name__ == "__main__":
+    import loader
+
+    testConfig = {
+            "region": "Asia",
+            "year": 1962,
+            "operation": "average"
+            }
+
+    print("Loading data for test...")
+    rawData = loader.loadData("gdp_with_continent_filled.csv")
+
+    if rawData:
+        print("Running processor...")
+        results = processAnalysis(rawData, testConfig)
+
+        print("\n--- Test Results ---")
+        print(f"Title: {results['title']}")
+        print(f"Value: {results['resultValue']:,.2f}")
+        print(f"Countries included: {len(results['plotData']['labels'])}")
+    else:
+        print("Could not load data. Check loader.py or CSV filename.")
