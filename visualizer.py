@@ -7,7 +7,7 @@ COLORS = ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3
 def shorten_label(label, max_len=15):
     """
     Helper: Cuts off long names so they don't clutter the graph.
-    FIX: Now checks if label is a string first. Leaves years (numbers) alone.
+    Checks if label is a string first to avoid breaking Line Charts.
     """
     if isinstance(label, str) and len(label) > max_len:
         return label[:max_len] + "..."
@@ -25,7 +25,7 @@ def plotDashboard(result):
         print("No data available.")
         return
 
-    # FIX: Apply shortening only where appropriate (handled inside the function)
+    # Shorten labels (safe for strings only)
     labels = [shorten_label(l) for l in raw_labels]
 
     # Create Figure
@@ -35,12 +35,10 @@ def plotDashboard(result):
 
     # --- BAR CHART ---
     if graphType == "bar":
-        # Create bars
         ax.bar(labels, values, color=COLORS[:len(labels)], edgecolor='white', alpha=0.8)
         
         ax.set_ylabel("GDP (USD)", color='white', fontsize=12)
         
-        # FIX: Dynamic Text Sizing & Rotation
         if len(labels) > 10:
             font_size = 8
             rotation = 90
@@ -50,7 +48,6 @@ def plotDashboard(result):
         
         ax.tick_params(axis='x', rotation=rotation, colors='white', labelsize=font_size)
         ax.tick_params(axis='y', colors='white')
-        
         ax.grid(axis='y', linestyle='--', alpha=0.3, color='gray', zorder=0)
 
     # --- PIE CHART ---
@@ -58,7 +55,6 @@ def plotDashboard(result):
         total = sum(values)
         threshold = 0.01 * total # 1% Threshold
         
-        # Filter logic
         main_labels = [l for l, v in zip(labels, values) if v >= threshold]
         main_values = [v for v in values if v >= threshold]
         
@@ -67,19 +63,21 @@ def plotDashboard(result):
             main_labels.append("Others")
             main_values.append(others)
 
+        # PLOT PIE: Added center=(0, -0.1) to move it down
         wedges, texts, autotexts = ax.pie(
             main_values, 
             labels=main_labels, 
             autopct='%1.1f%%', 
             startangle=140,
             colors=COLORS,
+            radius=1.2, 
+            center=(0, 0),  # <--- Moves the chart downwards
             textprops={'color':"white"}
         )
         plt.setp(autotexts, size=10, weight="bold", color="black")
 
     # --- LINE CHART ---
     elif graphType == "line":
-        # Note: 'labels' here are years (integers), so shorten_label ignored them.
         ax.plot(labels, values, color='#00ffcc', linewidth=2, marker='o', 
                 markersize=8, markerfacecolor='#ffffff', markeredgecolor='#00ffcc')
         
@@ -103,6 +101,5 @@ def plotDashboard(result):
     ax.spines['left'].set_color('white')
 
     # Adjust bottom margin
-    plt.subplots_adjust(bottom=0.25) 
-    
+    plt.subplots_adjust(bottom=0.2)
     plt.show()
