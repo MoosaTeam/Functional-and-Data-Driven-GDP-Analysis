@@ -35,7 +35,7 @@ def processAnalysis(data, config):
 
     regionData = filterByRegion(data, targetRegion)
     gdpValues = getYearValues(regionData, targetYear)
-    countryNames = [countryName['country'] for c in regionData if targetYear in countryName['gdp']]
+    countryNames = [countryName['country'] for countryName in regionData if targetYear in countryName['gdp']]
     
     resultStat = calculateStats(gdpValues, operation)
 
@@ -48,5 +48,4 @@ def processAnalysis(data, config):
                 },
             "year": targetYear,
             "region": targetRegion
-            }
-
+    }
