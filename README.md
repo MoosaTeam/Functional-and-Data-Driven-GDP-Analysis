@@ -7,7 +7,7 @@ Created by Muhammad Moosa and Syed Abdullah — two dinguses with a questionable
 # Line Graph for GDP trend of Pakistan from 2020 to 2024
 <img width="800" alt="GDP visualization 1" src="https://github.com/user-attachments/assets/26d629a5-d694-4187-9da9-089a616df7a4" />
 
-# Pie Chart for SUM GDP of Europe in 2020
+# Pie Chart for Sum GDP of Europe in 2020
 <img width="800" alt="GDP visualization 2" src="https://github.com/user-attachments/assets/ff9c30e6-435a-45e8-965a-f63c65367cee" />
 
 # Bar Graph for Average GDP of Asia in 2020
